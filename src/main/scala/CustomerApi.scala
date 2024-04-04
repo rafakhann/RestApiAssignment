@@ -1,5 +1,4 @@
 
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
@@ -15,12 +14,9 @@ import scala.io.StdIn
 //
 // case class for Person
 case class Person(index: Int, firstName: String, lastName: String, email: String)
-
 object CustomerApi extends App {
-
   // JsonFormat for Person case class
   implicit val personFormat: RootJsonFormat[Person] = jsonFormat4(Person)
-
   // Load data from CSV file
   val filepath = "C:\\Users\\c22832b\\IdeaProjects\\RestApiAssignment\\src\\main\\scala\\customers_1000.csv"
   val persons: collection.mutable.Buffer[Person] = CSVReader.open(new java.io.File(filepath))
@@ -29,12 +25,10 @@ object CustomerApi extends App {
     .map { case List(index, firstName, lastName, email, _*) =>
       Person(index.toInt, firstName, lastName, email)
     }.toBuffer
-
   // Akka HTTP setup
   implicit val system: ActorSystem = ActorSystem("Validation")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-
   // Route for validation, data retrieval, deletion, and update
   val validationRoute: Route =
     pathPrefix("api") {
@@ -53,13 +47,12 @@ object CustomerApi extends App {
             }
           }
         }~
-        path("allData") {
-           concat(
-          get {
-            complete(StatusCodes.OK -> persons.map(p => s"${p.index},${p.firstName},${p.lastName},${p.email}").mkString("\n"))
-
-            }~
-          path(IntNumber){ index =>
+          path("allData") {
+            get {
+              complete(StatusCodes.OK -> persons.map(p => s"${p.index},${p.firstName},${p.lastName},${p.email}").mkString("\n"))
+            }
+          }~
+          path("emp"/IntNumber){ index =>
             get{
               persons.find(_.index == index) match {
                 case Some(person) =>
@@ -68,7 +61,6 @@ object CustomerApi extends App {
                   complete(StatusCodes.NotFound -> "Person not found.")
               }
             }~
-              concat(
               delete {
                 persons.indexWhere(_.index == index) match {
                   case -1 =>
@@ -78,25 +70,33 @@ object CustomerApi extends App {
                     complete(StatusCodes.OK -> "Person deleted successfully.")
                 }
               } ~
-                put {
-                  entity(as[String]) { input =>
-                    val json = input.parseJson
-                    val personOpt = json.convertTo[Option[Person]]
-                    personOpt match {
-                      case Some(person) =>
-                        updatePerson(index, person)
-                      case None =>
-                        complete(StatusCodes.BadRequest -> "Invalid JSON format.")
+              put {
+                entity(as[String]) { input =>
+                  val fields = input.split(",")
+                  if(fields.length != 3){
+                    complete(StatusCodes.BadRequest -> "Invalid input. Expected: First name, Last Name, Email")
+                  }
+                  else {
+                    try {
+                      val json = input.parseJson
+                      val firstName = json.asJsObject.fields("firstName").convertTo[String]
+                      val lastName = json.asJsObject.fields("lastName").convertTo[String]
+                      val email = json.asJsObject.fields("email").convertTo[String]
+
+                      val person = Person(index, firstName, lastName, email)
+                      updatePerson(index, person)
+                    } catch {
+                      case _: NumberFormatException =>
+                        complete(StatusCodes.BadRequest -> "Index must be an integer.")
+                      case _: Throwable =>                               // server errors exception handle
+                        complete(StatusCodes.InternalServerError -> "Internal server error.")
                     }
                   }
                 }
-              )
-            }
-          )
-        }
+              }
+          }
       )
     }
-
   // Validation func for person data
   def validateData(person: Person): Option[String] = person match {
     case Person(index, _, _, _) if index < 0 =>
@@ -110,7 +110,6 @@ object CustomerApi extends App {
     case _ =>
       None
   }
-
   // Function to validate, save a person, and return appropriate response
   def validateAndSavePerson(person: Person): Route = {
     validateData(person) match {
@@ -121,7 +120,6 @@ object CustomerApi extends App {
         complete(StatusCodes.OK -> "Data is valid.")
     }
   }
-
   // Function to update a person by index
   def updatePerson(index: Int, updatedPerson: Person): Route = {
     validateData(updatedPerson) match {
@@ -137,12 +135,10 @@ object CustomerApi extends App {
         }
     }
   }
-
   // Start the HTTP server
   val bindingFuture: Future[Http.ServerBinding] = Http().bindAndHandle(validationRoute, "localhost", 8080)
   println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
   StdIn.readLine()
-
 
   bindingFuture
     .flatMap(_.unbind())
@@ -153,8 +149,4 @@ object CustomerApi extends App {
         println(s"Failed to unbind and terminate: ${e.getMessage}")
         system.terminate()
     }
-
 }
-
-
-
