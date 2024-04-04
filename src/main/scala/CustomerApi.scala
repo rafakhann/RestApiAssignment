@@ -39,7 +39,7 @@ object CustomerApi extends App {
   val validationRoute: Route =
     pathPrefix("api") {
       concat(
-        path("validation") {
+        path("postvalidation") {
           post {
             entity(as[String]) { input =>
               val json = input.parseJson
@@ -52,17 +52,32 @@ object CustomerApi extends App {
               }
             }
           }
-        },
-        path("data") {
-          concat(
-            get {
-              complete(StatusCodes.OK -> persons.map(p => s"${p.index},${p.firstName},${p.lastName},${p.email}").mkString("\n"))
-            },
-            path(IntNumber) { index =>
+        }~
+        path("allData") {
+           concat(
+          get {
+            complete(StatusCodes.OK -> persons.map(p => s"${p.index},${p.firstName},${p.lastName},${p.email}").mkString("\n"))
+
+            }~
+          path(IntNumber){ index =>
+            get{
+              persons.find(_.index == index) match {
+                case Some(person) =>
+                  complete(StatusCodes.OK -> s"${person.index},${person.firstName},${person.lastName},${person.email}")
+                case None =>
+                  complete(StatusCodes.NotFound -> "Person not found.")
+              }
+            }~
               concat(
-                delete {
-                  deletePerson(index)
-                },
+              delete {
+                persons.indexWhere(_.index == index) match {
+                  case -1 =>
+                    complete(StatusCodes.NotFound -> "Person not found.")
+                  case idx =>
+                    persons.remove(idx)      // remove data from list
+                    complete(StatusCodes.OK -> "Person deleted successfully.")
+                }
+              } ~
                 put {
                   entity(as[String]) { input =>
                     val json = input.parseJson
@@ -82,16 +97,18 @@ object CustomerApi extends App {
       )
     }
 
-  // Validation function for person data
-  def validateData(person: Person): Option[String] = {//to check name contains only alphabets
-    val validFirstName = person.firstName.matches("[a-zA-Z]+")
-    val validLastName = person.lastName.matches("[a-zA-Z]+")
-    val validEmailFormat = person.email.matches("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
-
-    if (!validFirstName) Some("First name should contain only alphabets.")
-    else if (!validLastName) Some("Last name should contain only alphabets.")
-    else if (!validEmailFormat) Some("Invalid email format.")
-    else None
+  // Validation func for person data
+  def validateData(person: Person): Option[String] = person match {
+    case Person(index, _, _, _) if index < 0 =>
+      Some("Index should be a positive number.")
+    case Person(_, firstName, _, _) if !firstName.matches("[a-zA-Z]+") =>
+      Some("First name should contain only alphabets.")
+    case Person(_, _, lastName, _) if !lastName.matches("[a-zA-Z]+") =>
+      Some("Last name should contain only alphabets.")
+    case Person(_, _, _, email) if !email.matches("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}") =>
+      Some("Invalid email format.")
+    case _ =>
+      None
   }
 
   // Function to validate, save a person, and return appropriate response
@@ -102,17 +119,6 @@ object CustomerApi extends App {
       case None =>
         persons += person
         complete(StatusCodes.OK -> "Data is valid.")
-    }
-  }
-
-  // Function to delete a person by index
-  def deletePerson(index: Int): Route = {
-    persons.indexWhere(_.index == index) match {
-      case -1 =>
-        complete(StatusCodes.NotFound -> "Person not found.")
-      case idx =>
-        persons.remove(idx)
-        complete(StatusCodes.OK -> "Person deleted successfully.")
     }
   }
 
@@ -147,5 +153,8 @@ object CustomerApi extends App {
         println(s"Failed to unbind and terminate: ${e.getMessage}")
         system.terminate()
     }
+
 }
+
+
 
