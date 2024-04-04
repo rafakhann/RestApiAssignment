@@ -120,7 +120,7 @@ object CustomerApi extends App {
         complete(StatusCodes.OK -> "Data is valid.")
     }
   }
-  // Function to update a person by index
+  //Function to update a person by index
   def updatePerson(index: Int, updatedPerson: Person): Route = {
     validateData(updatedPerson) match {
       case Some(errorMsg) =>
