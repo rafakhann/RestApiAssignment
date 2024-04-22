@@ -31,7 +31,7 @@ trait DataValidation {
       None
   }
 
-  // Function to validate, save a person, and return appropriate response
+  /// Function to validate, save a person, and return appropriate response
   def validateAndSavePerson(person: Person): Route = {
     validateData(person) match {
       case Some(errorMsg) =>
