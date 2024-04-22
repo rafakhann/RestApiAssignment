@@ -4,7 +4,9 @@ You can use tools like cURL or Postman to interact with the API endpoints:
 
 
 1.Validate Person Data Endpoint
+
  -Method: POST
+ 
  -Path: /customers/validate
  -Description: Validates and saves the provided person data.
  -Request Body: JSON representation of a person.
