@@ -3,11 +3,11 @@ The server will start running at http://localhost:8080.
 You can use tools like cURL or Postman to interact with the API endpoints:
 
 
-1.Validate Person Data Endpoint
+1.POST Person Data Endpoint
 
  -Method: POST
  
- -Path: /customers/validate 
+ -Path: /customers 
  
  -Description: Validates and saves the provided person data.
  
@@ -19,11 +19,11 @@ You can use tools like cURL or Postman to interact with the API endpoints:
   
   -400 Bad Request: Invalid JSON format or validation failed.
   
-List All Persons Endpoint
+2.GET Persons Endpoint
 
  -Method: GET
  
- -Path: /customers/list
+ -Path: /customers
  
  -Description: Retrieves a list of all persons.
  
@@ -33,11 +33,11 @@ List All Persons Endpoint
   
   -404 Not Found: No persons found.
   
-Get Person by Index Endpoint
+83.Get Person by Index Endpoint
 
  -Method: GET
  
- -Path: /customers/employee/{index}
+ -Path: /customers/{index}
  
  -Description: Retrieves a person by their index.
  
@@ -49,11 +49,11 @@ Get Person by Index Endpoint
   
   -404 Not Found: Person not found.
   
-Delete Person by Index Endpoint
+4.Delete Person by Index Endpoint
 
  -Method: DELETE
 
- -Path: /customers/employee/{index}
+ -Path: /customers/{index}
  
  -Description: Deletes a person by their index.
  
@@ -65,11 +65,11 @@ Delete Person by Index Endpoint
   
   -404 Not Found: Person not found.
   
-Update Person by Index Endpoint
+5.Update Person by Index Endpoint
 
  -Method: PUT
  
- -Path: /customers/employee/{index}
+ -Path: /customers/{index}
  
  -Description: Updates a person by their index.
  
