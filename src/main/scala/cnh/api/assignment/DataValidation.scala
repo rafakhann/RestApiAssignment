@@ -4,11 +4,13 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import com.github.tototoshi.csv.CSVReader
+
 trait DataValidation {
 
 
   // Load data from CSV file
-  val filepath = "C:\\Users\\c22832b\\IdeaProjects\\RestApiAssignment\\src\\main\\scala\\customers_1000.csv"
+  val filepath = "C:\\Users\\c22832b\\IdeaProjects\\RestApiAssignment\\src\\main\\scala\\cnh\\api\\assignment\\customers_1000.csv"
+  //C:\Users\c22832b\IdeaProjects\RestApiAssignment\src\main\scala\cnh\api\assignment
   val persons: collection.mutable.Buffer[Person] = CSVReader.open(new java.io.File(filepath))
     .toStream
     .drop(1) // Skip the first row containing headers

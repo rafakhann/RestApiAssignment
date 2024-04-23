@@ -7,17 +7,16 @@ import spray.json._
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 
 
-
 trait CustomerRoutes extends DataValidation {
 
   // JsonFormat for Person case class
-implicit val personFormat: RootJsonFormat[Person] = jsonFormat4(Person)
+  implicit val personFormat: RootJsonFormat[Person] = jsonFormat4(Person)
 
   // Route for validation, data retrieval, deletion, and update
   val routes: Route =
     pathPrefix("customers") {
       concat(
-        path("validate") {
+
           post {
             entity(as[String]) { input =>
               val json = input.parseJson
@@ -29,14 +28,13 @@ implicit val personFormat: RootJsonFormat[Person] = jsonFormat4(Person)
                   complete(StatusCodes.BadRequest -> "Invalid JSON format.")
               }
             }
-          }
         } ~
-          path("list") {
             get {
+              pathEndOrSingleSlash {
               complete(StatusCodes.OK -> persons.map(p => s"${p.index},${p.firstName},${p.lastName},${p.email}").mkString("\n"))
             }
           } ~
-          path("employee" / IntNumber) { index =>
+          path( IntNumber) { index =>
             get {
               persons.find(_.index == index) match {
                 case Some(person) =>

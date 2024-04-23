@@ -2,7 +2,8 @@ package cnh.api.assignment
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, Materializer}
+
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success}
 import scala.io.StdIn
@@ -13,7 +14,7 @@ case class Person(index: Int, firstName: String, lastName: String, email: String
 object CustomerApi extends App with CustomerRoutes {
   // Akka HTTP setup
   implicit val system: ActorSystem = ActorSystem("Validation")
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
+  implicit val materializer = Materializer(system)
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
   // Start the HTTP server
