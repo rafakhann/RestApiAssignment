@@ -20,17 +20,21 @@ trait DataValidation {
 
 
   // Validation func for person data
-  def validateData(person: Person): Option[String] = person match {
+  def validateData(person: Person): Option[String] = {
+    val s1 :String= "[a-zA-Z]+"
+    val s2 :String= "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+    person match {
     case Person(index, _, _, _) if index < 0 =>
       Some("Index should be a positive number.")
-    case Person(_, firstName, _, _) if !firstName.matches("[a-zA-Z]+") =>
+    case Person(_, firstName, _, _) if !firstName.matches(s1) =>
       Some("First name should contain only alphabets.")
-    case Person(_, _, lastName, _) if !lastName.matches("[a-zA-Z]+") =>
+    case Person(_, _, lastName, _) if !lastName.matches(s1) =>
       Some("Last name should contain only alphabets.")
-    case Person(_, _, _, email) if !email.matches("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}") =>
+    case Person(_, _, _, email) if !email.matches(s2) =>
       Some("Invalid email format.")
     case _ =>
       None
+  }
   }
 
   /// Function to validate, save a person, and return appropriate response
@@ -40,7 +44,7 @@ trait DataValidation {
         complete(StatusCodes.BadRequest -> errorMsg)
       case None =>
         persons += person
-        complete(StatusCodes.OK -> "Data is valid.")
+        complete(StatusCodes.OK -> "Success.")
     }
   }
 }
