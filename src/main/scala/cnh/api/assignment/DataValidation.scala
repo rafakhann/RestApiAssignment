@@ -10,13 +10,20 @@ trait DataValidation {
 
   // Load data from CSV file
   val filepath = "C:\\Users\\c22832b\\IdeaProjects\\RestApiAssignment\\src\\main\\scala\\cnh\\api\\assignment\\customers_1000.csv"
-  //C:\Users\c22832b\IdeaProjects\RestApiAssignment\src\main\scala\cnh\api\assignment
+
   val persons: collection.mutable.Buffer[Person] = CSVReader.open(new java.io.File(filepath))
     .toStream
     .drop(1) // Skip the first row containing headers
     .map { case List(index, firstName, lastName, email, _*) =>
       Person(index.toInt, firstName, lastName, email)
     }.toBuffer
+
+//  val persons: Vector[Person] = CSVReader.open(new java.io.File(filepath))
+//    .toStream
+//    .map {
+//      case List(index, firstName, lastName, email) => Person(index.toInt, firstName, lastName, email)
+//    }.toVector
+
 
 
   // Validation func for person data
